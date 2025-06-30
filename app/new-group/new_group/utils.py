@@ -1,3 +1,6 @@
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.x509.oid import NameOID
 from flask import current_app
 
 from config import config, messages
@@ -59,3 +62,37 @@ def set_group_id(group_id):
         current_app.logger.info(messages.GROUP_ID_NOT_SET.format(group_id))
     except Exception as ex:
         raise ex
+
+def validate_client_certificate(client_cert):
+    """Validate client certificate
+
+    Arguments:
+        client_cert(str): Client certificate in PEM format
+
+    Returns:
+        str: Error message if validation fails, otherwise an empty string    
+    """
+    try:
+        # Clean up the certificate data
+        cleaned_cert = client_cert.strip()\
+            .replace("\r", "")\
+            .replace("\n", "")\
+            .replace("-----BEGIN CERTIFICATE-----", "")\
+            .replace("-----END CERTIFICATE-----", "")
+        pem_cert = f"-----BEGIN CERTIFICATE-----\n{cleaned_cert}\n-----END CERTIFICATE-----"
+        cert_data = pem_cert.encode("utf-8")
+        
+        # Load the certificate
+        cert = x509.load_pem_x509_certificate(cert_data, default_backend())
+        
+        # Validate client certificate
+        subject_cn = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
+        if subject_cn != config.TLS_CLIENT_CERT_CN:
+            return messages.INVALID_CLIENT_CERTIFICATE.format(
+                config.TLS_CLIENT_CERT_CN,
+                subject_cn
+            )
+        return ''
+    except Exception as ex:
+        current_app.logger.error(f"Certificate validation failed: {ex}")
+        return str(ex)

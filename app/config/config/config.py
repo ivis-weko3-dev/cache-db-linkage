@@ -38,3 +38,6 @@ CACHE_REDIS_SENTINELS = [("sentinel-service.re","26379")]
 # logging config
 CLI_LOG_LEVEL = 'INFO'
 CLI_LOG_OUTPUT_PATH = '/var/log/cache-db/cli.log'
+
+# CN of TLS client certificate
+TLS_CLIENT_CERT_CN = 'cg.gakunin.jp'

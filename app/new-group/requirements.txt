@@ -6,3 +6,4 @@ flask
 -e ../jc-redis
 -e ../get-groups
 redis
+pyOpenSSL

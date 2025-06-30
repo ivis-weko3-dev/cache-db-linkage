@@ -1,12 +1,12 @@
 import subprocess
-from logging import INFO
+from logging import ERROR, INFO
 from unittest.mock import patch
 
 import pytest
 from redis import ConnectionError
 
 from config.config import GAKUNIN_GROUP_SUFFIX
-from new_group.utils import set_group_id
+from new_group.utils import set_group_id, validate_client_certificate
 
 # def set_group_id(group_id):
 # .tox/c1/bin/pytest --cov=new_group tests/test_utils.py::test_03_set_group_id -s -vv -s --cov-branch --cov-report=term --basetemp=.tox/c1/tmp
@@ -504,3 +504,23 @@ def test_28_set_group_id(app, test_logger, prepare_authorization_dict, prepare_r
         assert str_groups == ["GakuNinTF", target_group_id]
         assert str_groups2 == ["GakuNinTF", target_group_id]
         assert 'Group ID({}) is set to Redis.'.format(target_group_id) == info_logs[0]
+
+# .tox/c1/bin/pytest --cov=new_group tests/test_utils.py::test_validate_client_certificate -s -vv -s --cov-branch --cov-report=term --basetemp=.tox/c1/tmp
+def test_validate_client_certificate(app, test_logger):
+    with open('tests/data/client.txt', 'r') as f:
+        client_cert = f.read()
+    
+    with patch('config.config.TLS_CLIENT_CERT_CN', 'Client'):
+        result = validate_client_certificate(client_cert)
+        assert result == ''
+    
+    with patch('config.config.TLS_CLIENT_CERT_CN', 'WrongClient'):
+        result = validate_client_certificate(client_cert)
+        assert result == 'Invalid client certificate. Expected CN: WrongClient, Found CN: Client'
+
+    with patch('cryptography.x509.load_pem_x509_certificate') as mock_load_cert:
+        mock_load_cert.side_effect = ValueError('Invalid certificate format')
+        result = validate_client_certificate(client_cert)
+        error_logs = [record[2] for record in test_logger.record_tuples if record[1] == ERROR]
+        assert 'Invalid certificate format' in error_logs[0]
+        assert result == 'Invalid certificate format'

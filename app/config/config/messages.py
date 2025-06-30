@@ -21,3 +21,4 @@ TLS_CLIENT_KEY_FILE_NOT_FOUND = 'tls_client_key({}) is not found.'
 # app/new-group/new_group/utils.py
 GROUP_ID_SET = 'Group ID({}) is set to Redis.'
 GROUP_ID_NOT_SET = 'Group ID({}) is not set to Redis.'
+INVALID_CLIENT_CERTIFICATE = 'Invalid client certificate. Expected CN: {}, Found CN: {}'
