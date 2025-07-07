@@ -41,3 +41,6 @@ CLI_LOG_OUTPUT_PATH = '/var/log/cache-db/cli.log'
 
 # CN of TLS client certificate
 TLS_CLIENT_CERT_CN = 'cg.gakunin.jp'
+
+# whether to verify TLS client certificate
+VERIFY_TLS_CLIENT_CERT = False

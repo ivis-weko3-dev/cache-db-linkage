@@ -58,7 +58,9 @@ def get_groups_from_gakunin(fqdn):
         raise Exception(messages.TLS_CLIENT_KEY_FILE_NOT_FOUND.format(target_sp['tls_client_key']))
     target_url = urljoin(config.GROUPS_API_URL, target_sp['sp_connector_id'])
     # get groups what connected to the target sp
-    response = requests.get(target_url, cert=(target_sp['tls_client_cert'], target_sp['tls_client_key']), verify=False)
+    response = requests.get(target_url,
+                            cert=(target_sp['tls_client_cert'], target_sp['tls_client_key']),
+                            verify=config.VERIFY_TLS_CLIENT_CERT)
     response.raise_for_status()
     return response.json()['entry']
 
