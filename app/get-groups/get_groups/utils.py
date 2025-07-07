@@ -2,9 +2,13 @@ import os
 from urllib.parse import urljoin
 
 import requests
+import urllib3
 
 from config import config, messages
 from jc_redis.redis_conn import RedisConnection
+
+# Suppress InsecureRequestWarning
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def set_groups(fqdn):
     """Get groups from Gakunin API and set to Redis
@@ -54,7 +58,7 @@ def get_groups_from_gakunin(fqdn):
         raise Exception(messages.TLS_CLIENT_KEY_FILE_NOT_FOUND.format(target_sp['tls_client_key']))
     target_url = urljoin(config.GROUPS_API_URL, target_sp['sp_connector_id'])
     # get groups what connected to the target sp
-    response = requests.get(target_url, cert=(target_sp['tls_client_cert'], target_sp['tls_client_key']))
+    response = requests.get(target_url, cert=(target_sp['tls_client_cert'], target_sp['tls_client_key']), verify=False)
     response.raise_for_status()
     return response.json()['entry']
 
